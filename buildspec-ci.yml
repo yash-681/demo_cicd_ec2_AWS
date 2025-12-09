@@ -1,0 +1,31 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: ap-south-1
+    ACCOUNT_ID: "550933156296"
+    ECR_REPO: "demo_ecr_repo"
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+      - aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "${ECR_URI}"
+      - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}
+      - echo "IMAGE_TAG=${IMAGE_TAG}"
+  build:
+    commands:
+      - echo "Building Docker image..."
+      - ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+      - docker build -t "${ECR_URI}:${IMAGE_TAG}" .
+  post_build:
+    commands:
+      - echo "Pushing image to ECR..."
+      - ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+      - docker push "${ECR_URI}:${IMAGE_TAG}"
+      - echo "Build and push complete."
+artifacts:
+  files:
+    - '**/*'

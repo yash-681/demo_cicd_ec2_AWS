@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: ap-south-1
+    ACCOUNT_ID: "550933156296"
+    ECR_REPO: "demo_ecr_repo"
+    EC2_INSTANCE_ID: "i-03d59ac0ab147679e"
+
+phases:
+  build:
+    commands:
+      - echo "Starting deploy via SSM..."
+      - IMAGE_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:8}
+      - echo "Deploying image tag: ${IMAGE_TAG}"
+      - ECR_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}"
+      - echo "Using ECR URI: ${ECR_URI}"
+      - echo "Sending SSM command to EC2 instance ${EC2_INSTANCE_ID}..."
+
+      - aws ssm send-command \
+          --region "${AWS_REGION}" \
+          --instance-ids "${EC2_INSTANCE_ID}" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Deploy from CodePipeline via CodeBuild + SSM" \
+          --parameters commands="bash /home/ec2-user/deploy_scripts/deploy_docker.sh ${AWS_REGION} ${ECR_URI} ${IMAGE_TAG}" \
+          --output text
+
+artifacts:
+  files:
+    - '**/*'
