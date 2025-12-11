@@ -20,7 +20,6 @@ Application runs at:
 http://<EC2-PUBLIC-IP>:8080
 
 yaml
-Copy code
 
 ---
 
@@ -59,5 +58,6 @@ buildspec-deploy.yml
 scripts/
 └── deploy_docker.sh
 
-yaml
-Copy code
+<img width="1437" height="494" alt="image" src="https://github.com/user-attachments/assets/a1c21df4-4b21-4531-b377-77b3dde932d1" />
+
+
